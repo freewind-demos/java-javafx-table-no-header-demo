@@ -1,30 +1,18 @@
 package demo;
 
+import com.sun.javafx.scene.control.skin.TableHeaderRow;
+import com.sun.javafx.scene.control.skin.TableViewSkinBase;
 import javafx.application.Application;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.beans.property.SimpleStringProperty;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 
 import static javafx.collections.FXCollections.observableArrayList;
-
 
 public class Hello extends Application {
 
@@ -35,43 +23,63 @@ public class Hello extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Hello");
-        VBox root = new VBox() {{
-            getChildren().add(createTable());
-            getChildren().add(createAddButton());
+        HBox root = new HBox() {{
+            getChildren().add(createTable1());
+            getChildren().add(createTable2());
+            getChildren().add(createTable3());
         }};
-        primaryStage.setScene(new Scene(root, 300, 250));
+        primaryStage.setScene(new Scene(root, 600, 250));
         primaryStage.show();
     }
 
-    private final ObservableList<Person> data = observableArrayList(
-            new Person("AAA", 23, observableArrayList("Apple", "Banana")),
-            new Person("BBB", 11, observableArrayList("Pear")),
-            new Person("DDD", 34, observableArrayList("Orange"))
-    );
+    private final ObservableList<String> data = observableArrayList("AAA", "BBB", "CCC");
 
-    private Button createAddButton() {
-        return new Button("Add Data") {{
-            setOnAction(new EventHandler<ActionEvent>() {
-                public void handle(ActionEvent event) {
-                    data.add(new Person("NEW", new Random().nextInt(100), Arrays.asList("date", "watermelon")));
-                }
+    private TableView<String> createTable1() {
+        TableView<String> table = new TableView<String>() {
+            @Override
+            public void resize(double width, double height) {
+                super.resize(width, height);
+                Pane header = (Pane) lookup("TableHeaderRow");
+                header.setMinHeight(0);
+                header.setPrefHeight(0);
+                header.setMaxHeight(0);
+                header.setVisible(false);
+            }
+        };
+
+        table.getColumns().add(new TableColumn<String, String>("Name") {{
+            setCellValueFactory(param -> new SimpleStringProperty(param.getValue()));
+        }});
+        table.setItems(data);
+        return table;
+    }
+
+    private TableView<String> createTable2() {
+        return new TableView<String>() {{
+            skinProperty().addListener((a, b, newSkin) -> {
+                TableHeaderRow header = ((TableViewSkinBase) newSkin).getTableHeaderRow();
+                header.setMinHeight(0);
+                header.setPrefHeight(0);
+                header.setMaxHeight(0);
+                header.setVisible(false);
             });
+
+            this.getColumns().add(new TableColumn<String, String>("Name") {{
+                setCellValueFactory(param -> new SimpleStringProperty(param.getValue()));
+            }});
+            this.setItems(data);
         }};
     }
 
-    private TableView<Person> createTable() {
-        return new TableView<Person>() {{
-            getColumns().add(new TableColumn<Person, String>("Name") {{
-                setCellValueFactory(new PropertyValueFactory<Person, String>("name"));
+    private TableView<String> createTable3() {
+        return new TableView<String>() {{
+            getStylesheets().add("hello.css");
+            getStyleClass().add("no-header");
+
+            this.getColumns().add(new TableColumn<String, String>("Name") {{
+                setCellValueFactory(param -> new SimpleStringProperty(param.getValue()));
             }});
-            getColumns().add(new TableColumn<Person, Integer>("Number") {{
-                setCellValueFactory(new PropertyValueFactory<Person, Integer>("number"));
-            }});
-            getColumns().add(new TableColumn<Person, List<String>>("Fruits") {{
-                setCellValueFactory(new PropertyValueFactory<Person, List<String>>("fruits"));
-            }});
-            setItems(data);
-            setEditable(true);
+            this.setItems(data);
         }};
     }
 }
